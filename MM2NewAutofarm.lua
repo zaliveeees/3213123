@@ -438,15 +438,15 @@ task.spawn(function()
             if coin and player.Character then
                 local hrp = player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    if dist > 150 then
-                        hrp.CFrame = coin.CFrame
-                    else
-                        local tween = TweenService:Create(hrp, TweenInfo.new(dist / 20, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
-                        tween:Play()
-                        repeat 
-                            task.wait() 
-                        until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or not hrp.Parent
-                        tween:Cancel()
+                    if dist > 10 then
+                        -- Установка CFrame для движения к монете (без телепортации)
+                        hrp.CFrame = CFrame.lookAt(hrp.Position, coin.Position)
+                        
+                        -- Включаем движение персонажа
+                        local humanoid = player.Character:FindFirstChild("Humanoid")
+                        if humanoid then
+                            humanoid:MoveTo(coin.Position)
+                        end
                     end
                 end
             end
