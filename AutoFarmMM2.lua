@@ -214,7 +214,10 @@ playTimeLabel.TextXAlignment = Enum.TextXAlignment.Left
 task.spawn(function()
     while playTimeLabel and playTimeLabel.Parent do
         local delta = math.floor(tick() - startTime)
-        local d, h, m, s = math.floor(delta/86400), math.floor(delta%86400/3600), math.floor(delta%3600/60), delta%60
+        local d = math.floor(delta/86400)
+        local h = math.floor(delta%86400/3600)
+        local m = math.floor(delta%3600/60)
+        local s = delta%60
         playTimeLabel.Text = string.format("⌛ time in game: %dd %02dh %02dm %02ds", d, h, m, s)
         task.wait(1)
     end
@@ -247,7 +250,7 @@ local function createSnowflake()
     
     task.spawn(function()
         while snow and snow.Parent do
-            time = time + 0.016 -- примерно 60 FPS
+            time = time + 0.016
             
             if not snow.Parent then break end
             
@@ -262,7 +265,7 @@ local function createSnowflake()
                 newY
             )
             
-            if newY > 260 then -- высота frame
+            if newY > 260 then
                 snow:Destroy()
                 break
             end
@@ -333,9 +336,9 @@ closeBtn.MouseButton1Click:Connect(function()
     snowContainer.Visible = not isHidden
 end)
 
-local CoinCollected = ReplicatedStorage.Remotes.Gameplay.CoinCollected
-local RoundStart = ReplicatedStorage.Remotes.Gameplay.RoundStart
-local RoundEnd = ReplicatedStorage.Remotes.Gameplay.RoundEndFade
+local CoinCollected = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("CoinCollected")
+local RoundStart = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundStart")
+local RoundEnd = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundEndFade")
 
 local farming = false
 local bag_full = false
@@ -353,43 +356,49 @@ end
 
 local function getHRP() 
     local char = getCharacter()
-    return char:WaitForChild("HumanoidRootPart")
+    return char:WaitForChild("HumanoidRootPart", 10)
 end
 
-CoinCollected.OnClientEvent:Connect(function(_, current, max)
-    if current == max and not resetting and autoResetEnabled then
-        resetting = true
-        bag_full = true
-        local hrp = getHRP()
-        if start_position then
-            local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-            tween:Play()
-            tween.Completed:Wait()
+if CoinCollected then
+    CoinCollected.OnClientEvent:Connect(function(_, current, max)
+        if current == max and not resetting and autoResetEnabled then
+            resetting = true
+            bag_full = true
+            local hrp = getHRP()
+            if hrp and start_position then
+                local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+                tween:Play()
+                tween.Completed:Wait()
+            end
+            task.wait(0.5)
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
+            end
+            player.CharacterAdded:Wait()
+            task.wait(1.5)
+            resetting = false
+            bag_full = false
         end
-        task.wait(0.5)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.Health = 0
-        end
-        player.CharacterAdded:Wait()
-        task.wait(1.5)
-        resetting = false
-        bag_full = false
-    end
-end)
+    end)
+end
 
-RoundStart.OnClientEvent:Connect(function()
-    farming = true
-    if player.Character then
-        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            start_position = hrp.CFrame
+if RoundStart then
+    RoundStart.OnClientEvent:Connect(function()
+        farming = true
+        if player.Character then
+            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                start_position = hrp.CFrame
+            end
         end
-    end
-end)
+    end)
+end
 
-RoundEnd.OnClientEvent:Connect(function()
-    farming = false
-end)
+if RoundEnd then
+    RoundEnd.OnClientEvent:Connect(function()
+        farming = false
+    end)
+end
 
 local function get_nearest_coin()
     local hrp = getHRP()
