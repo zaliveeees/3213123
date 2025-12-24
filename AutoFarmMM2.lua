@@ -9,15 +9,18 @@ local VirtualUser = game:GetService("VirtualUser")
 local workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
+-- Удаляем старый UI
 if player.PlayerGui:FindFirstChild("MM2_UI") then
     player.PlayerGui.MM2_UI:Destroy()
 end
 
+-- Стартовые значения
 local autoFarmEnabled = false
 local autoResetEnabled = false
 local disableRenderEnabled = false
 local antiAFKUsed = false
 
+-- Winter UI
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "MM2_UI"
 gui.ResetOnSpawn = false
@@ -31,6 +34,7 @@ frame.BorderSizePixel = 2
 frame.BorderColor3 = Color3.fromRGB(100, 200, 255)
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
+-- Зимний градиент
 local gradient = Instance.new("UIGradient", frame)
 gradient.Rotation = 90
 gradient.Color = ColorSequence.new({
@@ -46,11 +50,13 @@ TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.Easing
     Size = UDim2.new(0, 320, 0, 260)
 }):Play()
 
+-- ❄️ Снежинка вместо тыквы
 local snowflake = Instance.new("Frame", frame)
 snowflake.Size = UDim2.new(0, 42, 0, 42)
 snowflake.Position = UDim2.new(0.82, 0, 0.04, 0)
 snowflake.BackgroundTransparency = 1
 
+-- Создаем снежинку из нескольких линий
 local function createSnowflakeArm(rotation)
     local arm = Instance.new("Frame", snowflake)
     arm.Size = UDim2.new(0, 2, 0, 18)
@@ -78,6 +84,7 @@ for i = 0, 5 do
     side2.BorderSizePixel = 0
 end
 
+-- Центральный круг снежинки
 local center = Instance.new("Frame", snowflake)
 center.Size = UDim2.new(0, 10, 0, 10)
 center.Position = UDim2.new(0.5, -5, 0.5, -5)
@@ -85,6 +92,7 @@ center.BackgroundColor3 = Color3.fromRGB(230, 240, 255)
 center.BorderSizePixel = 0
 Instance.new("UICorner", center).CornerRadius = UDim.new(1, 0)
 
+-- Анимация вращения снежинки
 local rotationSpeed = 0
 local snowflakeConnection
 snowflakeConnection = RunService.RenderStepped:Connect(function(delta)
@@ -96,6 +104,7 @@ snowflakeConnection = RunService.RenderStepped:Connect(function(delta)
     snowflake.Rotation = rotationSpeed % 360
 end)
 
+-- Заголовок
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, -50, 0, 42)
 title.Position = UDim2.new(0, 10, 0, 0)
@@ -108,6 +117,7 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextStrokeTransparency = 0.3
 title.TextStrokeColor3 = Color3.fromRGB(0, 30, 60)
 
+-- Кнопка закрытия (снежный комок)
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -35, 0, 6)
@@ -118,6 +128,7 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 16
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
+-- Фон контента (ледяной)
 local contentBg = Instance.new("Frame", frame)
 contentBg.Size = UDim2.new(0.92, 0, 0.76, 0)
 contentBg.Position = UDim2.new(0.04, 0, 0.18, 0)
@@ -125,6 +136,7 @@ contentBg.BackgroundColor3 = Color3.fromRGB(20, 50, 100)
 contentBg.BackgroundTransparency = 0.4
 Instance.new("UICorner", contentBg)
 
+-- Добавляем эффект льда через градиент
 local iceGradient = Instance.new("UIGradient", contentBg)
 iceGradient.Rotation = 45
 iceGradient.Color = ColorSequence.new({
@@ -139,6 +151,7 @@ content.Size = UDim2.new(1, -10, 1, -10)
 content.Position = UDim2.new(0, 5, 0, 5)
 content.BackgroundTransparency = 1
 
+-- Функция создания переключателей (зимний стиль)
 local function createToggle(yPos, labelText, defaultValue, callback)
     local label = Instance.new("TextLabel", content)
     label.Size = UDim2.new(0.7, 0, 0, 30)
@@ -181,6 +194,7 @@ createToggle(70, "⛄ Disable Render", disableRenderEnabled, function(value)
     RunService:Set3dRenderingEnabled(not disableRenderEnabled)
 end)
 
+-- Anti-AFK (зимний стиль)
 local afkBtn = Instance.new("TextButton", content)
 afkBtn.Size = UDim2.new(0.9, 0, 0, 32)
 afkBtn.Position = UDim2.new(0.05, 0, 0, 110)
@@ -200,6 +214,7 @@ afkBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Время в игре (зимний стиль)
 local startTime = tick()
 local playTimeLabel = Instance.new("TextLabel", content)
 playTimeLabel.Size = UDim2.new(0.9, 0, 0, 28)
@@ -214,15 +229,13 @@ playTimeLabel.TextXAlignment = Enum.TextXAlignment.Left
 task.spawn(function()
     while playTimeLabel and playTimeLabel.Parent do
         local delta = math.floor(tick() - startTime)
-        local d = math.floor(delta/86400)
-        local h = math.floor(delta%86400/3600)
-        local m = math.floor(delta%3600/60)
-        local s = delta%60
+        local d, h, m, s = math.floor(delta/86400), math.floor(delta%86400/3600), math.floor(delta%3600/60), delta%60
         playTimeLabel.Text = string.format("⌛ time in game: %dd %02dh %02dm %02ds", d, h, m, s)
         task.wait(1)
     end
 end)
 
+-- Добавляем падающие снежинки на фон
 local snowContainer = Instance.new("Frame", frame)
 snowContainer.Size = UDim2.new(1, 0, 1, 0)
 snowContainer.BackgroundTransparency = 1
@@ -250,7 +263,7 @@ local function createSnowflake()
     
     task.spawn(function()
         while snow and snow.Parent do
-            time = time + 0.016
+            time = time + 0.016 -- примерно 60 FPS
             
             if not snow.Parent then break end
             
@@ -265,7 +278,7 @@ local function createSnowflake()
                 newY
             )
             
-            if newY > 260 then
+            if newY > 260 then -- высота frame
                 snow:Destroy()
                 break
             end
@@ -275,6 +288,7 @@ local function createSnowflake()
     end)
 end
 
+-- Создаем снегопад
 task.spawn(function()
     while snowContainer and snowContainer.Parent do
         createSnowflake()
@@ -282,6 +296,7 @@ task.spawn(function()
     end
 end)
 
+-- Перетаскивание UI
 local dragging, dragInput, dragStart, startPos
 local function updateFramePosition(input)
     local delta = input.Position - dragStart
@@ -326,6 +341,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- Скрытие/раскрытие (с эффектом снега)
 local isHidden = false
 closeBtn.MouseButton1Click:Connect(function()
     isHidden = not isHidden
@@ -336,9 +352,10 @@ closeBtn.MouseButton1Click:Connect(function()
     snowContainer.Visible = not isHidden
 end)
 
-local CoinCollected = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("CoinCollected")
-local RoundStart = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundStart")
-local RoundEnd = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundEndFade")
+-- Auto Farm Coins
+local CoinCollected = ReplicatedStorage.Remotes.Gameplay.CoinCollected
+local RoundStart = ReplicatedStorage.Remotes.Gameplay.RoundStart
+local RoundEnd = ReplicatedStorage.Remotes.Gameplay.RoundEndFade
 
 local farming = false
 local bag_full = false
@@ -356,49 +373,43 @@ end
 
 local function getHRP() 
     local char = getCharacter()
-    return char:WaitForChild("HumanoidRootPart", 10)
+    return char:WaitForChild("HumanoidRootPart")
 end
 
-if CoinCollected then
-    CoinCollected.OnClientEvent:Connect(function(_, current, max)
-        if current == max and not resetting and autoResetEnabled then
-            resetting = true
-            bag_full = true
-            local hrp = getHRP()
-            if hrp and start_position then
-                local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-                tween:Play()
-                tween.Completed:Wait()
-            end
-            task.wait(0.5)
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                player.Character.Humanoid.Health = 0
-            end
-            player.CharacterAdded:Wait()
-            task.wait(1.5)
-            resetting = false
-            bag_full = false
+CoinCollected.OnClientEvent:Connect(function(_, current, max)
+    if current == max and not resetting and autoResetEnabled then
+        resetting = true
+        bag_full = true
+        local hrp = getHRP()
+        if start_position then
+            local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+            tween:Play()
+            tween.Completed:Wait()
         end
-    end)
-end
-
-if RoundStart then
-    RoundStart.OnClientEvent:Connect(function()
-        farming = true
-        if player.Character then
-            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                start_position = hrp.CFrame
-            end
+        task.wait(0.5)
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.Health = 0
         end
-    end)
-end
+        player.CharacterAdded:Wait()
+        task.wait(1.5)
+        resetting = false
+        bag_full = false
+    end
+end)
 
-if RoundEnd then
-    RoundEnd.OnClientEvent:Connect(function()
-        farming = false
-    end)
-end
+RoundStart.OnClientEvent:Connect(function()
+    farming = true
+    if player.Character then
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            start_position = hrp.CFrame
+        end
+    end
+end)
+
+RoundEnd.OnClientEvent:Connect(function()
+    farming = false
+end)
 
 local function get_nearest_coin()
     local hrp = getHRP()
@@ -427,12 +438,16 @@ task.spawn(function()
             if coin and player.Character then
                 local hrp = player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    local tween = TweenService:Create(hrp, TweenInfo.new(dist / 30, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
-                    tween:Play()
-                    repeat 
-                        task.wait() 
-                    until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or not hrp.Parent
-                    tween:Cancel()
+                    if dist > 150 then
+                        hrp.CFrame = coin.CFrame
+                    else
+                        local tween = TweenService:Create(hrp, TweenInfo.new(dist / 20, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                        tween:Play()
+                        repeat 
+                            task.wait() 
+                        until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or not hrp.Parent
+                        tween:Cancel()
+                    end
                 end
             end
         end
