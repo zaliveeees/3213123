@@ -1,744 +1,441 @@
--- AutoFasrm v1 mm2 by meentoz sourse
+if not game:IsLoaded() then game.Loaded:Wait() end
 
-local ScreenGui = Instance.new("ScreenGui")
-local player = game:GetService("Players").LocalPlayer
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
-
-local SnowflakeButton = Instance.new("TextButton")
-SnowflakeButton.Name = "SnowflakeButton"
-SnowflakeButton.Size = UDim2.new(0, 50, 0, 50)
-SnowflakeButton.Position = UDim2.new(0, 400, 0.1, -85)
-SnowflakeButton.BackgroundColor3 = Color3.fromRGB(58, 237, 248)
-SnowflakeButton.Text = "❄️"
-SnowflakeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SnowflakeButton.Font = Enum.Font.GothamBold
-SnowflakeButton.TextSize = 24
-SnowflakeButton.Parent = ScreenGui
-
-local SnowflakeCorner = Instance.new("UICorner")
-SnowflakeCorner.CornerRadius = UDim.new(1, 0)
-SnowflakeCorner.Parent = SnowflakeButton
-
-local UserInputService = game:GetService("UserInputService")
-local isMobile = UserInputService.TouchEnabled
-
-if isMobile then
-    SnowflakeButton.Size = UDim2.new(0, 70, 0, 70)
-    SnowflakeButton.Position = UDim2.new(0, 20, 0.1, -85)
-    SnowflakeButton.TextSize = 32
-end
-
-local SnowflakeStroke = Instance.new("UIStroke")
-SnowflakeStroke.Color = Color3.fromRGB(255, 255, 255)
-SnowflakeStroke.Thickness = 3
-SnowflakeStroke.Transparency = 0
-SnowflakeStroke.LineJoinMode = Enum.LineJoinMode.Round
-SnowflakeStroke.Parent = SnowflakeButton
-
-local guiVisible = false
-local tweenService = game:GetService("TweenService")
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainUI"
-MainFrame.Size = UDim2.new(0, 300, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(9, 116, 236)
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundTransparency = 0.7
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Visible = false
-
-local SnowflakesBackground = Instance.new("Frame")
-SnowflakesBackground.Name = "SnowflakesBackground"
-SnowflakesBackground.Size = UDim2.new(1, 0, 1, 0)
-SnowflakesBackground.BackgroundTransparency = 1
-SnowflakesBackground.Parent = MainFrame
-SnowflakesBackground.ZIndex = 0
-
-local snowflakes = {}
-local snowflakeChars = {"❄","⛄"}
-
--- Функция создания снежинки
-local function createSnowflake()
-	local snowflake = Instance.new("TextLabel")
-	snowflake.Name = "Snowflake"
-	snowflake.Size = UDim2.new(0, 20, 0, 20)
-
-	snowflake.Position = UDim2.new(
-		math.random() * 0.9,
-		0,
-		0,
-		0
-	)
-
-	snowflake.Text = snowflakeChars[math.random(1, #snowflakeChars)]
-	snowflake.TextColor3 = Color3.fromRGB(255, 255, 255)
-	snowflake.TextTransparency = math.random(30, 70) / 100
-	snowflake.Font = Enum.Font.Gotham
-	snowflake.TextSize = math.random(15, 30)
-	snowflake.BackgroundTransparency = 1
-	snowflake.Parent = SnowflakesBackground
-	snowflake.ZIndex = 0
-
-	local speed = math.random(30, 60) / 100
-	local rotationSpeed = math.random(-100, 100) / 10
-
-	coroutine.wrap(function()
-		while snowflake.Parent do
-			local currentY = snowflake.Position.Y.Scale
-			snowflake.Position = UDim2.new(
-				snowflake.Position.X.Scale,
-				snowflake.Position.X.Offset,
-				currentY + 0.01 * speed,
-				snowflake.Position.Y.Offset
-			)
-
-			snowflake.Rotation = snowflake.Rotation + rotationSpeed
-
-			if currentY > 0.9 then
-				snowflake:Destroy()
-				for i, v in ipairs(snowflakes) do
-					if v == snowflake then
-						table.remove(snowflakes, i)
-						break
-					end
-				end
-				createSnowflake()
-				break
-			end
-
-			wait(0.03)
-		end
-	end)()
-
-	table.insert(snowflakes, snowflake)
-	return snowflake
-end
-
-for i = 1, 10 do
-	createSnowflake()
-	wait(0.1)
-end
-
-coroutine.wrap(function()
-	while SnowflakesBackground.Parent do
-		wait(2)
-		if #snowflakes < 15 then
-			createSnowflake()
-		end
-	end
-end)()
-
-local snowflakePosition = SnowflakeButton.Position
-
-local function openGUI()
-	guiVisible = true
-
-	MainFrame.Size = UDim2.new(0, 10, 0, 10)
-	MainFrame.Position = snowflakePosition
-	MainFrame.Visible = true
-
-	local sizeTween = tweenService:Create(
-		MainFrame,
-		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{Size = UDim2.new(0, 300, 0, 500)}
-	)
-
-	local positionTween = tweenService:Create(
-		MainFrame,
-		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{Position = UDim2.new(0.5, -150, 0.5, -250)}
-	)
-
-	sizeTween:Play()
-	positionTween:Play()
-
-	local rotateTween = tweenService:Create(
-		SnowflakeButton,
-		TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-		{Rotation = 180}
-	)
-	rotateTween:Play()
-
-	print("GUI открывается...")
-end
-
-local function closeGUI()
-	guiVisible = false
-
-	local sizeTween = tweenService:Create(
-		MainFrame,
-		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-		{Size = UDim2.new(0, 10, 0, 10)}
-	)
-
-	local positionTween = tweenService:Create(
-		MainFrame,
-		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-		{Position = snowflakePosition}
-	)
-
-	sizeTween:Play()
-	positionTween:Play()
-
-	local rotateTween = tweenService:Create(
-		SnowflakeButton,
-		TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-		{Rotation = 0}
-	)
-	rotateTween:Play()
-
-	print("GUI закрывается...")
-
-	task.wait(0.5)
-	MainFrame.Visible = false
-end
-
-SnowflakeButton.MouseButton1Click:Connect(function()
-	print("Снежинка нажата! Состояние GUI:", guiVisible)
-
-	if not guiVisible then
-		openGUI()
-	else
-		closeGUI()
-	end
-end)
-
-local UICorner = Instance.new("UICorner")
-UICorner.Parent = MainFrame
-UICorner.CornerRadius = UDim.new(0, 12)
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Parent = MainFrame
-UIStroke.Color = Color3.fromRGB(2, 14, 222)
-UIStroke.Thickness = 4
-UIStroke.Transparency = 0
-UIStroke.LineJoinMode = Enum.LineJoinMode.Round
-UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Size = UDim2.new(1, -50, 0, 50)
-Title.Position = UDim2.new(0, 20, 0, 20)
-Title.BackgroundTransparency = 1
-Title.Text = "Winter AutoFarm MM2❄️"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 20
-Title.Parent = MainFrame
-
-local Version = Instance.new("TextLabel")
-Version.Name = "Version"
-Version.Size = UDim2.new(0, 30, 0, 30)
-Version.Position = UDim2.new(1, -40, 0, 25)
-Version.BackgroundTransparency = 1
-Version.Text = "v1"
-Version.TextColor3 = Color3.fromRGB(2, 14, 222)
-Version.Font = Enum.Font.GothamBold
-Version.TextSize = 16
-Version.TextXAlignment = Enum.TextXAlignment.Right
-Version.Parent = MainFrame
-
-local Divider = Instance.new("Frame")
-Divider.Name = "Divider"
-Divider.Size = UDim2.new(1, 0, 0, 2)
-Divider.Position = UDim2.new(0, 0, 0, 80)
-Divider.BackgroundColor3 = Color3.fromRGB(2, 14, 222)
-Divider.BorderSizePixel = 0
-Divider.Parent = MainFrame
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
 local workspace = game:GetService("Workspace")
-local player = game:GetService("Players").LocalPlayer
+local player = Players.LocalPlayer
+
+if player.PlayerGui:FindFirstChild("MM2_UI") then
+    player.PlayerGui.MM2_UI:Destroy()
+end
 
 local autoFarmEnabled = false
 local autoResetEnabled = false
-local farmSpeed = 20
+local disableRenderEnabled = false
+local antiAFKUsed = false
+
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "MM2_UI"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 320, 0, 260)
+frame.Position = UDim2.new(0.5, -160, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
+frame.BackgroundTransparency = 0.1
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(100, 200, 255)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+local gradient = Instance.new("UIGradient", frame)
+gradient.Rotation = 90
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(20, 40, 80)),
+    ColorSequenceKeypoint.new(0.25, Color3.fromRGB(40, 80, 150)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 180, 255)),
+    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(200, 230, 255)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))
+})
+
+frame.Size = UDim2.new(0, 0, 0, 0)
+TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 320, 0, 260)
+}):Play()
+
+local snowflake = Instance.new("Frame", frame)
+snowflake.Size = UDim2.new(0, 42, 0, 42)
+snowflake.Position = UDim2.new(0.82, 0, 0.04, 0)
+snowflake.BackgroundTransparency = 1
+
+local function createSnowflakeArm(rotation)
+    local arm = Instance.new("Frame", snowflake)
+    arm.Size = UDim2.new(0, 2, 0, 18)
+    arm.Position = UDim2.new(0.5, -1, 0.5, -9)
+    arm.BackgroundColor3 = Color3.fromRGB(200, 230, 255)
+    arm.Rotation = rotation
+    arm.BorderSizePixel = 0
+    return arm
+end
+
+for i = 0, 5 do
+    local arm = createSnowflakeArm(i * 30)
+    local side1 = Instance.new("Frame", arm)
+    side1.Size = UDim2.new(0, 2, 0, 8)
+    side1.Position = UDim2.new(0.5, -1, 0, 2)
+    side1.BackgroundColor3 = Color3.fromRGB(180, 220, 255)
+    side1.Rotation = 45
+    side1.BorderSizePixel = 0
+    
+    local side2 = Instance.new("Frame", arm)
+    side2.Size = UDim2.new(0, 2, 0, 8)
+    side2.Position = UDim2.new(0.5, -1, 0, 2)
+    side2.BackgroundColor3 = Color3.fromRGB(180, 220, 255)
+    side2.Rotation = -45
+    side2.BorderSizePixel = 0
+end
+
+local center = Instance.new("Frame", snowflake)
+center.Size = UDim2.new(0, 10, 0, 10)
+center.Position = UDim2.new(0.5, -5, 0.5, -5)
+center.BackgroundColor3 = Color3.fromRGB(230, 240, 255)
+center.BorderSizePixel = 0
+Instance.new("UICorner", center).CornerRadius = UDim.new(1, 0)
+
+local rotationSpeed = 0
+local snowflakeConnection
+snowflakeConnection = RunService.RenderStepped:Connect(function(delta)
+    if not snowflake or not snowflake.Parent then
+        snowflakeConnection:Disconnect()
+        return
+    end
+    rotationSpeed = rotationSpeed + delta * 20
+    snowflake.Rotation = rotationSpeed % 360
+end)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -50, 0, 42)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "❄️ Murder Mystery 2 | Winter ❄️"
+title.TextColor3 = Color3.fromRGB(200, 230, 255)
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 20
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextStrokeTransparency = 0.3
+title.TextStrokeColor3 = Color3.fromRGB(0, 30, 60)
+
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 6)
+closeBtn.Text = "X"
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 220, 255)
+closeBtn.TextColor3 = Color3.fromRGB(10, 40, 80)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 16
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+
+local contentBg = Instance.new("Frame", frame)
+contentBg.Size = UDim2.new(0.92, 0, 0.76, 0)
+contentBg.Position = UDim2.new(0.04, 0, 0.18, 0)
+contentBg.BackgroundColor3 = Color3.fromRGB(20, 50, 100)
+contentBg.BackgroundTransparency = 0.4
+Instance.new("UICorner", contentBg)
+
+local iceGradient = Instance.new("UIGradient", contentBg)
+iceGradient.Rotation = 45
+iceGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(40, 100, 180)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 180, 255)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(180, 220, 255))
+})
+iceGradient.Transparency = NumberSequence.new(0.7)
+
+local content = Instance.new("Frame", contentBg)
+content.Size = UDim2.new(1, -10, 1, -10)
+content.Position = UDim2.new(0, 5, 0, 5)
+content.BackgroundTransparency = 1
+
+local function createToggle(yPos, labelText, defaultValue, callback)
+    local label = Instance.new("TextLabel", content)
+    label.Size = UDim2.new(0.7, 0, 0, 30)
+    label.Position = UDim2.new(0.05, 0, 0, yPos)
+    label.BackgroundTransparency = 1
+    label.Text = labelText
+    label.TextColor3 = Color3.fromRGB(220, 240, 255)
+    label.Font = Enum.Font.GothamSemibold
+    label.TextSize = 16
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local toggleBg = Instance.new("TextButton", content)
+    toggleBg.Size = UDim2.new(0, 50, 0, 25)
+    toggleBg.Position = UDim2.new(0.78, 0, 0, yPos + 2)
+    toggleBg.BackgroundColor3 = defaultValue and Color3.fromRGB(100, 200, 255) or Color3.fromRGB(60, 100, 150)
+    toggleBg.Text = ""
+    toggleBg.AutoButtonColor = false
+    Instance.new("UICorner", toggleBg).CornerRadius = UDim.new(1, 0)
+
+    local toggleKnob = Instance.new("Frame", toggleBg)
+    toggleKnob.Size = UDim2.new(0, 20, 0, 20)
+    toggleKnob.Position = defaultValue and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
+    toggleKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", toggleKnob).CornerRadius = UDim.new(1, 0)
+
+    toggleBg.MouseButton1Click:Connect(function()
+        defaultValue = not defaultValue
+        local pos = defaultValue and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
+        local color = defaultValue and Color3.fromRGB(100, 200, 255) or Color3.fromRGB(60, 100, 150)
+        TweenService:Create(toggleKnob, TweenInfo.new(0.25), { Position = pos }):Play()
+        TweenService:Create(toggleBg, TweenInfo.new(0.25), { BackgroundColor3 = color }):Play()
+        callback(defaultValue)
+    end)
+end
+
+createToggle(10, "❄️ Auto Farm Coins", autoFarmEnabled, function(value) autoFarmEnabled = value end)
+createToggle(40, "🎿 Auto Reset", autoResetEnabled, function(value) autoResetEnabled = value end)
+createToggle(70, "⛄ Disable Render", disableRenderEnabled, function(value)
+    disableRenderEnabled = value
+    RunService:Set3dRenderingEnabled(not disableRenderEnabled)
+end)
+
+local afkBtn = Instance.new("TextButton", content)
+afkBtn.Size = UDim2.new(0.9, 0, 0, 32)
+afkBtn.Position = UDim2.new(0.05, 0, 0, 110)
+afkBtn.BackgroundColor3 = antiAFKUsed and Color3.fromRGB(70, 180, 200) or Color3.fromRGB(100, 180, 255)
+afkBtn.Text = antiAFKUsed and "⛄ Anti-AFK Active" or "❄️ Enable Anti-AFK"
+afkBtn.TextColor3 = Color3.fromRGB(10, 40, 80)
+afkBtn.Font = Enum.Font.GothamBold
+afkBtn.TextSize = 15
+Instance.new("UICorner", afkBtn)
+
+afkBtn.MouseButton1Click:Connect(function()
+    if not antiAFKUsed then
+        antiAFKUsed = true
+        afkBtn.Text = "⛄ Anti-AFK Active"
+        afkBtn.BackgroundColor3 = Color3.fromRGB(70, 180, 200)
+        loadstring(game:HttpGet("https://pastebin.com/raw/bwP4bmed"))()
+    end
+end)
+
+local startTime = tick()
+local playTimeLabel = Instance.new("TextLabel", content)
+playTimeLabel.Size = UDim2.new(0.9, 0, 0, 28)
+playTimeLabel.Position = UDim2.new(0.05, 0, 0, 155)
+playTimeLabel.BackgroundTransparency = 1
+playTimeLabel.Text = "⌛ time in game: 0d 0h 0m 0s"
+playTimeLabel.TextColor3 = Color3.fromRGB(200, 230, 255)
+playTimeLabel.Font = Enum.Font.GothamBold
+playTimeLabel.TextSize = 14
+playTimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+task.spawn(function()
+    while playTimeLabel and playTimeLabel.Parent do
+        local delta = math.floor(tick() - startTime)
+        local d = math.floor(delta/86400)
+        local h = math.floor(delta%86400/3600)
+        local m = math.floor(delta%3600/60)
+        local s = delta%60
+        playTimeLabel.Text = string.format("⌛ time in game: %dd %02dh %02dm %02ds", d, h, m, s)
+        task.wait(1)
+    end
+end)
+
+local snowContainer = Instance.new("Frame", frame)
+snowContainer.Size = UDim2.new(1, 0, 1, 0)
+snowContainer.BackgroundTransparency = 1
+snowContainer.ClipsDescendants = true
+snowContainer.ZIndex = 0
+
+local snowflakes = {}
+local function createSnowflake()
+    local snow = Instance.new("TextLabel", snowContainer)
+    snow.Size = UDim2.new(0, math.random(15, 25), 0, math.random(15, 25))
+    snow.Position = UDim2.new(math.random(), -20, 0, -20)
+    snow.Text = "❄"
+    snow.BackgroundTransparency = 1
+    snow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    snow.TextSize = math.random(12, 18)
+    snow.Font = Enum.Font.Gotham
+    snow.ZIndex = 0
+    
+    local speed = math.random(20, 40)
+    local sway = math.random(-30, 30)
+    local swaySpeed = math.random(1, 3)
+    local time = 0
+    
+    table.insert(snowflakes, snow)
+    
+    task.spawn(function()
+        while snow and snow.Parent do
+            time = time + 0.016
+            
+            if not snow.Parent then break end
+            
+            local currentPos = snow.Position
+            local newX = currentPos.X.Offset + math.sin(time * swaySpeed) * sway * 0.5
+            local newY = currentPos.Y.Offset + speed
+            
+            snow.Position = UDim2.new(
+                currentPos.X.Scale,
+                newX,
+                currentPos.Y.Scale,
+                newY
+            )
+            
+            if newY > 260 then
+                snow:Destroy()
+                break
+            end
+            
+            task.wait(0.016)
+        end
+    end)
+end
+
+task.spawn(function()
+    while snowContainer and snowContainer.Parent do
+        createSnowflake()
+        task.wait(math.random(0.2, 0.4))
+    end
+end)
+
+local dragging, dragInput, dragStart, startPos
+local function updateFramePosition(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+frame.InputBegan:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        if input.UserInputType == Enum.UserInputType.Touch then
+            local connection
+            connection = input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    connection:Disconnect()
+                else
+                    updateFramePosition(input)
+                end
+            end)
+        end
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        updateFramePosition(input)
+    end
+end)
+
+local isHidden = false
+closeBtn.MouseButton1Click:Connect(function()
+    isHidden = not isHidden
+    local newSize = isHidden and UDim2.new(0, 320, 0, 42) or UDim2.new(0, 320, 0, 260)
+    TweenService:Create(frame, TweenInfo.new(0.3), { Size = newSize }):Play()
+    contentBg.Visible = not isHidden
+    snowflake.Visible = not isHidden
+    snowContainer.Visible = not isHidden
+end)
+
+local CoinCollected = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("CoinCollected")
+local RoundStart = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundStart")
+local RoundEnd = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Gameplay") and ReplicatedStorage.Remotes.Gameplay:FindFirstChild("RoundEndFade")
+
 local farming = false
 local bag_full = false
 local resetting = false
 local start_position = nil
 
-local CoinCollected, RoundStart, RoundEnd
-pcall(function()
-	CoinCollected = ReplicatedStorage.Remotes.Gameplay.CoinCollected
-	RoundStart = ReplicatedStorage.Remotes.Gameplay.RoundStart
-	RoundEnd = ReplicatedStorage.Remotes.Gameplay.RoundEndFade
+player.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- Если RemoteEvents не найдены, создаем заглушки
-if not CoinCollected then
-	warn("⚠️ RemoteEvents не найдены! AutoFarm может не работать.")
-end
-
 local function getCharacter() 
-	return player.Character or player.CharacterAdded:Wait() 
+    return player.Character or player.CharacterAdded:Wait() 
 end
 
 local function getHRP() 
-	local char = getCharacter()
-	return char:WaitForChild("HumanoidRootPart")
-end
-
-local function get_nearest_coin()
-	local hrp = getHRP()
-	if not hrp then return nil, math.huge end
-
-	local closest, dist = nil, math.huge
-	for _, m in pairs(workspace:GetChildren()) do
-		if m:FindFirstChild("CoinContainer") then
-			for _, coin in pairs(m.CoinContainer:GetChildren()) do
-				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-					local d = (hrp.Position - coin.Position).Magnitude
-					if d < dist then 
-						closest, dist = coin, d 
-					end
-				end
-			end
-		end
-	end
-	return closest, dist
-end
-
-if RoundStart then
-	RoundStart.OnClientEvent:Connect(function()
-		farming = true
-		print("Раунд начался, farming = true")
-	end)
-end
-
-if RoundEnd then
-	RoundEnd.OnClientEvent:Connect(function()
-		farming = false
-		print("Раунд окончен, farming = false")
-	end)
+    local char = getCharacter()
+    return char:WaitForChild("HumanoidRootPart", 10)
 end
 
 if CoinCollected then
-	CoinCollected.OnClientEvent:Connect(function(_, current, max)
-		if current == max and not resetting and autoResetEnabled then
-			print("Сумка заполнена! Запускаем Reset...")
-			resetting = true
-			bag_full = true
-			local hrp = getHRP()
-			if start_position then
-				local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-				tween:Play()
-				tween.Completed:Wait()
-			end
-			wait(0.5)
-			if player.Character and player.Character:FindFirstChild("Humanoid") then
-				player.Character.Humanoid.Health = 0
-			end
-			player.CharacterAdded:Wait()
-			wait(1.5)
-			resetting = false
-			bag_full = false
-			print("Reset завершен")
-		end
-	end)
+    CoinCollected.OnClientEvent:Connect(function(_, current, max)
+        if current == max and not resetting and autoResetEnabled then
+            resetting = true
+            bag_full = true
+            local hrp = getHRP()
+            if hrp and start_position then
+                local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+                tween:Play()
+                tween.Completed:Wait()
+            end
+            task.wait(0.5)
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
+            end
+            player.CharacterAdded:Wait()
+            task.wait(1.5)
+            resetting = false
+            bag_full = false
+        end
+    end)
 end
 
 if RoundStart then
-	RoundStart.OnClientEvent:Connect(function()
-		if player.Character then
-			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				start_position = hrp.CFrame
-				print("Стартовая позиция сохранена")
-			end
-		end
-	end)
-end
-
-local autoFarmCoroutine = nil
-local function startAutoFarm()
-	if autoFarmCoroutine then 
-		-- Останавливаем старую корутину если есть
-		autoFarmCoroutine = nil
-	end
-
-	print("🚀 AutoFarm ВКЛЮЧЕН! Скорость: " .. farmSpeed)
-	autoFarmEnabled = true
-
-	autoFarmCoroutine = coroutine.wrap(function()
-		while autoFarmEnabled do
-			if farming and not bag_full then
-				local coin, dist = get_nearest_coin()
-				if coin and player.Character then
-					local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-					if hrp then
-						if dist > 150 then
-							hrp.CFrame = coin.CFrame
-						else
-							local tween = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
-							tween:Play()
-							repeat 
-								wait() 
-							until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or not hrp.Parent
-							tween:Cancel()
-						end
-					end
-				end
-			end
-			wait(0.2)
-		end
-		print("AutoFarm ВЫКЛЮЧЕН")
-	end)()
-
-	autoFarmCoroutine()
-end
-
-local function stopAutoFarm()
-	autoFarmEnabled = false
-	autoFarmCoroutine = nil
-	print("AutoFarm ВЫКЛЮЧЕН")
-end
-
-local function createModernToggle(name, text, position, defaultValue)
-	-- Контейнер
-	local ToggleContainer = Instance.new("Frame")
-	ToggleContainer.Name = name .. "Toggle"
-	ToggleContainer.Size = UDim2.new(1, -40, 0, 40)
-	ToggleContainer.Position = position
-	ToggleContainer.BackgroundTransparency = 1
-	ToggleContainer.Active = true
-	ToggleContainer.Parent = MainFrame
-
-	local Background = Instance.new("Frame")
-	Background.Name = "Background"
-	Background.Size = UDim2.new(1, 0, 1, 0)
-	Background.BackgroundColor3 = Color3.fromRGB(2, 31, 126)
-	Background.BackgroundTransparency = 0.4
-	Background.Active = true
-	Background.Parent = ToggleContainer
-
-	local BackgroundCorner = Instance.new("UICorner")
-	BackgroundCorner.CornerRadius = UDim.new(0, 8)
-	BackgroundCorner.Parent = Background
-
-	local BackgroundStroke = Instance.new("UIStroke")
-	BackgroundStroke.Color = Color3.fromRGB(2, 14, 222)
-	BackgroundStroke.Thickness = 1
-	BackgroundStroke.Parent = Background
-
-	local TextLabel = Instance.new("TextLabel")
-	TextLabel.Name = "Text"
-	TextLabel.Size = UDim2.new(0.7, 0, 1, 0)
-	TextLabel.Position = UDim2.new(0, 15, 0, 0)
-	TextLabel.BackgroundTransparency = 1
-	TextLabel.Text = text
-	TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	TextLabel.Font = Enum.Font.Gotham
-	TextLabel.TextSize = 21
-	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-	TextLabel.Active = true
-	TextLabel.Parent = ToggleContainer
-
-	local ToggleSwitch = Instance.new("Frame")
-	ToggleSwitch.Name = "Switch"
-	ToggleSwitch.Size = UDim2.new(0, 60, 0, 30)
-	ToggleSwitch.Position = UDim2.new(1, -30, 1, -20)
-	ToggleSwitch.AnchorPoint = Vector2.new(1, 0.5)
-	ToggleSwitch.BackgroundColor3 = defaultValue and Color3.fromRGB(38, 0, 255) or Color3.fromRGB(124, 124, 124) -- ФИКС: поменяли цвета местами
-	ToggleSwitch.Active = true
-	ToggleSwitch.Parent = ToggleContainer
-
-	local SwitchCorner = Instance.new("UICorner")
-	SwitchCorner.CornerRadius = UDim.new(0, 15)
-	SwitchCorner.Parent = ToggleSwitch
-
-	local SwitchStroke = Instance.new("UIStroke")
-	SwitchStroke.Color = Color3.fromRGB(2, 15, 255)
-	SwitchStroke.Thickness = 1
-	SwitchStroke.Transparency = 0.3
-	SwitchStroke.Parent = ToggleSwitch
-
-	local ToggleSlider = Instance.new("Frame")
-	ToggleSlider.Name = "Slider"
-	ToggleSlider.Size = UDim2.new(0, 26, 0, 26)
-	ToggleSlider.Position = defaultValue and UDim2.new(1, -28, 1, -10) or UDim2.new(1, 2, 1, -10) -- ФИКС: поменяли местами
-	ToggleSlider.AnchorPoint = Vector2.new(0, 0) -- ФИКС: якорь по центру Y
-	ToggleSlider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	ToggleSlider.Parent = ToggleSwitch
-
-	local SliderCorner = Instance.new("UICorner")
-	SliderCorner.CornerRadius = UDim.new(1, 0)
-	SliderCorner.Parent = ToggleSlider
-
-	local isEnabled = defaultValue
-
-	local function toggleState()
-		isEnabled = not isEnabled
-
-		game:GetService("TweenService"):Create(
-			ToggleSwitch,
-			TweenInfo.new(0.2),
-			{BackgroundColor3 = isEnabled and Color3.fromRGB(38, 0, 255) or Color3.fromRGB(124, 124, 124)}
-		):Play()
-
-		game:GetService("TweenService"):Create(
-			ToggleSlider,
-			TweenInfo.new(0.2),
-			{Position = isEnabled and UDim2.new(1, -28, 0.5, -13) or UDim2.new(0, 2, 0.5, -13)}
-		):Play()
-
-		print(text .. ": " .. (isEnabled and "ВКЛЮЧЕНО" or "ВЫКЛЮЧЕНО"))
-		return isEnabled
-	end
-
-	
-	if not defaultValue then
-		ToggleSwitch.BackgroundColor3 = Color3.fromRGB(124, 124, 124)
-		ToggleSlider.Position = UDim2.new(0, 2, 0.5, -13)
-	else
-		ToggleSwitch.BackgroundColor3 = Color3.fromRGB(38, 0, 255)
-		ToggleSlider.Position = UDim2.new(1, -28, 0.5, -13)
-	end
-
-	
--- Универсальная функция обработки клика/касания
-local function handleToggleClick()
-    local newState = toggleState()
-
-    -- Обработка функций тогглов
-    if name == "FarmCoins" then
-        if newState then
-            startAutoFarm()
-        else
-            stopAutoFarm()
+    RoundStart.OnClientEvent:Connect(function()
+        farming = true
+        if player.Character then
+            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                start_position = hrp.CFrame
+            end
         end
-    elseif name == "Reset" then
-        autoResetEnabled = newState
-        print("Auto Reset: " .. (autoResetEnabled and "ВКЛЮЧЕН" or "ВЫКЛЮЧЕН"))
-    elseif name == "AntiAfk" then
-        if newState then
-            local VirtualUser = game:GetService("VirtualUser")
-            player.Idled:Connect(function()
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
-            end)
-            print("Anti-AFK ВКЛЮЧЕН")
-        else
-            print("Anti-AFK ВЫКЛЮЧЕН (для полного отключения нужна перезагрузка)")
+    end)
+end
+
+if RoundEnd then
+    RoundEnd.OnClientEvent:Connect(function()
+        farming = false
+    end)
+end
+
+local function get_nearest_coin()
+    local hrp = getHRP()
+    if not hrp then return nil, math.huge end
+    
+    local closest, dist = nil, math.huge
+    for _, m in pairs(workspace:GetChildren()) do
+        if m:FindFirstChild("CoinContainer") then
+            for _, coin in pairs(m.CoinContainer:GetChildren()) do
+                if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
+                    local d = (hrp.Position - coin.Position).Magnitude
+                    if d < dist then 
+                        closest, dist = coin, d 
+                    end
+                end
+            end
         end
     end
+    return closest, dist
 end
 
--- Обработка кликов и касаний для всего контейнера
-ToggleContainer.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       (isMobile and input.UserInputType == Enum.UserInputType.Touch) then
-        handleToggleClick()
-        
-        -- Визуальная обратная связь для мобильных устройств
-        if isMobile then
-            game:GetService("TweenService"):Create(
-                Background,
-                TweenInfo.new(0.1),
-                {BackgroundTransparency = 0.1}
-            ):Play()
-            wait(0.1)
-            game:GetService("TweenService"):Create(
-                Background,
-                TweenInfo.new(0.1),
-                {BackgroundTransparency = 0.4}
-            ):Play()
+task.spawn(function()
+    while true do
+        if autoFarmEnabled and farming and not bag_full then
+            local coin, dist = get_nearest_coin()
+            if coin and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local tween = TweenService:Create(hrp, TweenInfo.new(dist / 30, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                    tween:Play()
+                    repeat 
+                        task.wait() 
+                    until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or not hrp.Parent
+                    tween:Cancel()
+                end
+            end
         end
+        task.wait(0.2)
     end
 end)
-
--- Также добавляем обработку для внутренних элементов
-local function propagateClick(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       (isMobile and input.UserInputType == Enum.UserInputType.Touch) then
-        handleToggleClick()
-    end
-end
-
-Background.InputBegan:Connect(propagateClick)
-ToggleSwitch.InputBegan:Connect(propagateClick)
-TextLabel.InputBegan:Connect(propagateClick)
-
-	return {Container = ToggleContainer, toggleFunction = toggleState, isEnabled = function() return isEnabled end}
-end
-
-
-local toggleList = {
-	{"FarmCoins", "🎄 AutoFarm", UDim2.new(0, 20, 0, 100), false},
-	{"Reset", "🔄 Reset FullBag", UDim2.new(0, 20, 0, 160), false},
-	{"AntiAfk", "⛄ AntiAfk", UDim2.new(0, 20, 0, 220), false},
-}
-
-
-local toggles = {}
-
-
-for i, toggleData in ipairs(toggleList) do
-	local name, text, position, defaultValue = toggleData[1], toggleData[2], toggleData[3], toggleData[4]
-	local toggle = createModernToggle(name, text, position, defaultValue)
-	toggles[name] = toggle
-end
-
-
-local SpeedContainer = Instance.new("Frame")
-SpeedContainer.Name = "SpeedToggle"
-SpeedContainer.Size = UDim2.new(1, -40, 0, 40)
-SpeedContainer.Position = UDim2.new(0, 20, 0, 280)
-SpeedContainer.BackgroundTransparency = 1
-SpeedContainer.Active = true
-SpeedContainer.Parent = MainFrame
-
-
-local Background = Instance.new("Frame")
-Background.Name = "Background"
-Background.Size = UDim2.new(1, 0, 1, 0)
-Background.BackgroundColor3 = Color3.fromRGB(2, 31, 126)
-Background.BackgroundTransparency = 0.4
-Background.Active = true
-Background.Parent = SpeedContainer
-
-local BackgroundCorner = Instance.new("UICorner")
-BackgroundCorner.CornerRadius = UDim.new(0, 8)
-BackgroundCorner.Parent = Background
-
-local BackgroundStroke = Instance.new("UIStroke")
-BackgroundStroke.Color = Color3.fromRGB(2, 14, 222)
-BackgroundStroke.Thickness = 1
-BackgroundStroke.Parent = Background
-
-
-local SpeedTextLabel = Instance.new("TextLabel")
-SpeedTextLabel.Name = "Text"
-SpeedTextLabel.Size = UDim2.new(0.7, 0, 1, 0)
-SpeedTextLabel.Position = UDim2.new(0, 15, 0, 0)
-SpeedTextLabel.BackgroundTransparency = 1
-SpeedTextLabel.Text = "⚡ Farm Speed: " .. farmSpeed
-SpeedTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedTextLabel.Font = Enum.Font.Gotham
-SpeedTextLabel.TextSize = 21
-SpeedTextLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedTextLabel.Active = true
-SpeedTextLabel.Parent = SpeedContainer
-
-
-local SpeedInput = Instance.new("TextBox")
-SpeedInput.Name = "SpeedInput"
-SpeedInput.Size = UDim2.new(0, 60, 0, 30)
-SpeedInput.Position = UDim2.new(1, -15, 0.9, -15)
-SpeedInput.AnchorPoint = Vector2.new(1, 0.5)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(41, 205, 255)
-SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedInput.Font = Enum.Font.Gotham
-SpeedInput.TextSize = 16
-SpeedInput.Text = tostring(farmSpeed)
-SpeedInput.PlaceholderText = "Speed"
-SpeedInput.Parent = SpeedContainer
-
-local InputCorner = Instance.new("UICorner")
-InputCorner.CornerRadius = UDim.new(0, 6)
-InputCorner.Parent = SpeedInput
-
-local InputStroke = Instance.new("UIStroke")
-InputStroke.Color = Color3.fromRGB(2, 15, 255)
-InputStroke.Thickness = 1
-InputStroke.Transparency = 0.3
-InputStroke.Parent = SpeedInput
-
-
-SpeedInput.FocusLost:Connect(function(enterPressed)
-	if enterPressed then
-		local newSpeed = tonumber(SpeedInput.Text)
-		if newSpeed and newSpeed >= 5 and newSpeed <= 100 then
-			farmSpeed = newSpeed
-			SpeedTextLabel.Text = "⚡ Farm Speed: " .. farmSpeed
-			print("Скорость AutoFarm изменена на: " .. farmSpeed)
-
-			SpeedInput.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-			wait(0.3)
-			SpeedInput.BackgroundColor3 = Color3.fromRGB(41, 205, 255)
-		else
-			SpeedInput.Text = tostring(farmSpeed)
-			SpeedInput.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-			print("Ошибка! Скорость должна быть от 5 до 100")
-			wait(0.3)
-			SpeedInput.BackgroundColor3 = Color3.fromRGB(41, 205, 255)
-		end
-	end
-end)
-
-
-SpeedContainer.MouseEnter:Connect(function()
-	game:GetService("TweenService"):Create(
-		Background,
-		TweenInfo.new(0.2),
-		{BackgroundTransparency = 0.2}
-	):Play()
-end)
-
-SpeedContainer.MouseLeave:Connect(function()
-	game:GetService("TweenService"):Create(
-		Background,
-		TweenInfo.new(0.2),
-		{BackgroundTransparency = 0.4}
-	):Play()
-end)
-
-
-local TimeCounter = Instance.new("TextLabel")
-TimeCounter.Name = "TimeCounter"
-TimeCounter.Size = UDim2.new(1, -40, 0, 30)
-TimeCounter.Position = UDim2.new(0, 20, 1, -35)
-TimeCounter.BackgroundColor3 = Color3.fromRGB(2, 31, 126)
-TimeCounter.BackgroundTransparency = 0.3
-TimeCounter.Text = "Time Farm: 00:00:00"
-TimeCounter.TextColor3 = Color3.fromRGB(255, 255, 255)
-TimeCounter.Font = Enum.Font.Gotham
-TimeCounter.TextSize = 20
-TimeCounter.TextXAlignment = Enum.TextXAlignment.Center
-TimeCounter.Parent = MainFrame
-
-local TimeCorner = Instance.new("UICorner")
-TimeCorner.CornerRadius = UDim.new(0, 8)
-TimeCorner.Parent = TimeCounter
-
-local TimeStroke = Instance.new("UIStroke")
-TimeStroke.Color = Color3.fromRGB(2, 14, 222)
-TimeStroke.Thickness = 2
-TimeStroke.Parent = TimeCounter
-
-
-local startTime = tick()
-local function updateTime()
-	while TimeCounter.Parent do
-		local elapsed = tick() - startTime
-		local hours = math.floor(elapsed / 3600)
-		local minutes = math.floor((elapsed % 3600) / 60)
-		local seconds = math.floor(elapsed % 60)
-
-		TimeCounter.Text = string.format("Time Farm: %02d:%02d:%02d", hours, minutes, seconds)
-		wait(1)
-	end
-end
-
-
-coroutine.wrap(updateTime)()
-
-print("✅ GUI создана успешно!")
-print("Количество переключателей: " .. #toggleList)
-print("Все кнопки выключены по умолчанию")
-print("Нажми на снежинку ❄️ чтобы открыть/закрыть GUI")
-print("AutoFarm готов к работе!")
-
-
-coroutine.wrap(function()
-	while true do
-		if autoFarmEnabled and farming then
-			print("🔍 AutoFarm ищет монеты... farming=" .. tostring(farming))
-		end
-		wait(5)
-	end
-end)()
